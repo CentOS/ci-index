@@ -1,0 +1,29 @@
+- job-template:
+    name: 'ci_build_{ci-project}'
+    scm:
+        - git:
+            url: 'https://github.com/bstinsonmhk/ci-index.git'
+            branches:
+                - origin/master
+            basedir: jjb-jobs
+    builders:
+        - shell: |
+            #!/bin/bash
+            
+            mkdir -p $WORKSPACE/{ci-project}
+
+            pushd $WORKSPACE/{ci-project}
+            for toclone in {git_url}
+            do
+                git clone $toclone 
+            done
+            popd
+            
+            jenkins-jobs update -r $WORKSPACE/jjb-jobs/configurator/project-defaults.yml:$WORKSPACE/{ci-project}
+
+- project:
+    name: ci.centos.org
+    jobs:
+        - 'ci_build_{ci-project}'
+    ci-project: 
+        !include ../project-index.yml
